@@ -1,24 +1,50 @@
-const { Client, Intents } = require('discord.js');
-const fs = require('fs');
-const conf = require('./conf.json');
-const auth = require('./auth.json');
-const CronJob = require('cron').CronJob;
+var { Client, Intents } = require('discord.js');
+var fs = require('fs');
+var conf = require('./conf.json');
+var auth = require('./auth.json');
+var CronJob = require('cron').CronJob;
 
 var movieList = [];
 var currInx = 0;
+var channel = {};
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+var client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
-var cron = new CronJob(
-	conf.movieTime,
-	pickMovie(),
-	null,
-	true,
-	'America/New_York'
-);
+var cron = new CronJob({
+	cronTime: conf.movieTime,
+	onTick: pickMovie,
+	start: false,
+	timeZone: 'America/New_York'
+});
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+}
 
 function pickMovie() {
-
+	if(movieList.length == 1) {
+		channel.send("Please add more than one movie for random picks!");
+		return;
+	}
+	movieList.sort((a, b) => {
+		return b.votes - a.votes;
+	});
+	var top = [];
+	var max = (movieList.length < 5) ? movieList.length : 5;
+	for(var i = 1; i <= max; i++) {
+		top.push(movieList[i]);
+	}
+	var choice = top[ getRandomInt(max) ];
+	channel.send("Random movie for this week is: " + choice['title'] + "!");
+	var toRem = choice['id'];
+	for( var i = 0; i < movieList.length; i++) {
+		if (movieList[i].id == toRem) {
+			movieList.splice(i, 1);
+		}
+	}
+	var list = getList();
+	channel.send("Movie " + toRem + " picked, removing!" + "\n" + list);
+	writeOut();
 }
 
 function fWidth(strLen, width) {
@@ -83,6 +109,8 @@ client.on('ready', () => {
 		movieList.sort((a, b) => {
 			return b.votes - a.votes;
 		});
+		channel = client.channels.cache.get(conf.channel);
+		cron.start();
 	});
 });
 
@@ -134,7 +162,7 @@ client.on('messageCreate', msg => {
 			case 'vote':
 				movieList = movieList.map(obj => {
 					if (obj.id == args[1]) {
-						return {...obj, votes: (parseInt(obj.votes) + 1)};
+						return {...obj, votes: (parseInt(obj.votes) + 1).toString()};
 					}
 					return obj;
 				});

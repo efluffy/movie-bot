@@ -1,5 +1,6 @@
 {
 	"saveFile": "listSave",
 	"helpFile": "help.txt",
-	"movieTime": "* * * * *"
+	"movieTime": "00 00 * * * *",
+	"channel": "983578912799993866"
 }
