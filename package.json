@@ -1,0 +1,10 @@
+{
+	"name": "movies-owo",
+	"version": "0.0.1",
+	"description": "moooobie bot :3",
+	"author": "Erika Von Badass",
+	"dependencies": {
+		"discord.js": "^13.8.0",
+		"winston": "^3.7.2"
+	}
+}

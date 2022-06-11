@@ -1,0 +1,17 @@
+  Moviebot Help
+-----------------
+This bot will maintain a list of movies that people add along with votes, and on each movie night the bot will select a random movie from the top 5 highest voted on the list to watch!
+
+Commands:
+
+!add - For adding a movie to the list. 
+	usage: "!add <movie title>"
+
+!rem - Allows you to remove a movie from the list.
+	usage: "!rem <movie id>"
+	
+!vote - Allows voting on a specific movie.
+	usage: "!vote <movie id>"
+
+!list - Returns a list of currently saved movies, votes, and IDs.
+	usage: "!list"
