@@ -1,4 +1,5 @@
 {
 	"saveFile": "listSave",
-	"helpFile": "help.txt"
+	"helpFile": "help.txt",
+	"movieTime": "* * * * *"
 }

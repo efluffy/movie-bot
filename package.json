@@ -4,6 +4,7 @@
 	"description": "moooobie bot :3",
 	"author": "Erika Von Badass",
 	"dependencies": {
+		"cron": "^2.0.0",
 		"discord.js": "^13.8.0",
 		"winston": "^3.7.2"
 	}

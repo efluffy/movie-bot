@@ -1,12 +1,25 @@
 const { Client, Intents } = require('discord.js');
 const fs = require('fs');
 const conf = require('./conf.json');
-const auth = require('./auth.json'); 
+const auth = require('./auth.json');
+const CronJob = require('cron').CronJob;
 
 var movieList = [];
 var currInx = 0;
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+
+var cron = new CronJob(
+	conf.movieTime,
+	pickMovie(),
+	null,
+	true,
+	'America/New_York'
+);
+
+function pickMovie() {
+
+}
 
 function fWidth(strLen, width) {
 	var t = width - strLen;
