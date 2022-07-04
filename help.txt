@@ -1,6 +1,6 @@
   Moviebot Help
 -----------------
-This bot will maintain a list of movies that people add along with votes, and on each movie night the bot will select a random movie from the top 5 highest voted on the list to watch!
+This bot will maintain a list of movies that people add along with votes, and on each movie night the bot will select a random vote-weighted movie to watch!
 
 Commands:
 
@@ -15,3 +15,5 @@ Commands:
 
 !list - Returns a list of currently saved movies, votes, and IDs.
 	usage: "!list"
+	
+!select - Returns a random vote-weighted movie again!

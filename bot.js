@@ -12,29 +12,46 @@ var client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_ME
 
 var cron = new CronJob({
 	cronTime: conf.movieTime,
-	onTick: pickMovie,
+	onTick: pickMovieWeighted,
 	start: false,
 	timeZone: 'America/New_York'
 });
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
+function randBetween(min, max) {
+    return parseInt(Math.floor(Math.random() * (max - min) + min));
 }
 
-function pickMovie() {
+function shuffle(array) {
+  var currentIndex = array.length,  randomIndex;
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
+
+function pickMovieWeighted() {
 	if(movieList.length == 1) {
 		channel.send("Please add more than one movie for random picks!");
 		return;
 	}
-	movieList.sort((a, b) => {
-		return b.votes - a.votes;
-	});
-	var top = [];
-	var max = (movieList.length < 5) ? movieList.length : 5;
-	for(var i = 1; i <= max; i++) {
-		top.push(movieList[i]);
+	movieList = shuffle(movieList);
+	weightSum = 0;
+	for( var i = 0; i < movieList.length; i++ ) {
+		weightSum += movieList[i].votes;
 	}
-	var choice = top[ getRandomInt(max) ];
+	var rand = randBetween(0, weightSum);
+	console.log(rand);
+	var choice = {};
+	for( var i = 0; i < movieList.length; i++ ) {
+		if( rand < movieList[i].votes ) {
+			choice = movieList[i];
+			break;
+		}
+		rand -= movieList[i].votes;
+	}
 	channel.send("Random movie for this week is: " + choice['title'] + "!");
 	var toRem = choice['id'];
 	for( var i = 0; i < movieList.length; i++) {
@@ -42,10 +59,14 @@ function pickMovie() {
 			movieList.splice(i, 1);
 		}
 	}
+	movieList.sort((a, b) => {
+		return b.votes - a.votes;
+	});
 	var list = getList();
 	channel.send("Movie " + toRem + " picked, removing!" + "\n" + list);
 	writeOut();
 }
+
 
 function fWidth(strLen, width) {
 	var t = width - strLen;
@@ -131,6 +152,10 @@ client.on('messageCreate', msg => {
 				msg.reply(reply);
 				break;
 				
+			case 'select':
+				pickMovieWeighted();
+				break;
+				
 			case 'add':
 				var toAdd = msg.toString().substring(5);
 				var add = 1;
@@ -155,6 +180,8 @@ client.on('messageCreate', msg => {
 						movieList.splice(i, 1);
 					}
 				}
+				currInx--;
+				writeOut();
 				var reply = getList();
 				msg.reply("Movie " + toRem + " removed!" + "\n" + reply);
 				break;
