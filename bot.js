@@ -93,9 +93,6 @@ client.on('ready', () => {
 	fs.readFile(conf.saveFile, function(err, buf) {
 		var bufSerialized = buf.toString();
 		var lines = bufSerialized.split('\n');
-		if(lines.length != 1) {
-			currInx = lines.length;
-		}
 		lines.forEach(function(line){
 			var obj = {};
 			var arr = line.split("┐");
@@ -106,6 +103,9 @@ client.on('ready', () => {
 				movieList.push(obj);
 			}
 		});
+		if(lines.length != 1) {
+			currInx = Math.max.apply(Math, movieList.map(function(obj) { return obj.id; }));
+		}
 		movieList.sort((a, b) => {
 			return b.votes - a.votes;
 		});
@@ -129,6 +129,10 @@ client.on('messageCreate', msg => {
 			case 'list':
 				var reply = getList();
 				msg.reply(reply);
+				break;
+				
+			case 'select':
+				pickMovie();
 				break;
 				
 			case 'add':
