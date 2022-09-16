@@ -3,10 +3,18 @@ var fs = require('fs');
 var conf = require('./conf.json');
 var auth = require('./auth.json');
 var CronJob = require('cron').CronJob;
+const { exec } = require("child_process");
+const http = require("http");
+const path = require("path");
+
+const hostname = conf.hostname;
+const port = conf.port;
 
 var movieList = [];
 var currInx = 0;
 var channel = {};
+var htmlHeader = `<html><head><title>Movie Bot List</title></head><body bgcolor="#000000" text="#69696"><pre>`;
+var htmlFooter = `</pre></body></html>`;
 
 var client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
@@ -63,7 +71,7 @@ function getList() {
 		var wVt = movie['votes'].length;
 		reply = reply + movie['id'] + fWidth(wId, 4) + "| " + movie['votes'] + fWidth(wVt, 6) + "| " + movie['title'] + "\n";
 	});
-	reply = '```' + reply + '```';
+	/* reply = '```' + reply + '```'; */
 	return reply;
 }
 
@@ -127,8 +135,14 @@ client.on('messageCreate', msg => {
 				break;
 				
 			case 'list':
-				var reply = getList();
+				var reply = conf.externalHost;
 				msg.reply(reply);
+				break;
+				
+			case 'wherebot':
+				exec("hostname", (err, stdout, stderr) => {
+					msg.reply(stdout);
+				});
 				break;
 				
 			case 'select':
@@ -147,7 +161,7 @@ client.on('messageCreate', msg => {
 				}
 				if (add == 1) {
 					addList(toAdd);
-					var reply = getList();
+					var reply = conf.externalHost;
 					msg.reply("Movie " + toAdd + " added!" + "\n" + reply);
 				}
 				break;
@@ -159,7 +173,7 @@ client.on('messageCreate', msg => {
 						movieList.splice(i, 1);
 					}
 				}
-				var reply = getList();
+				var reply = conf.externalHost;
 				msg.reply("Movie " + toRem + " removed!" + "\n" + reply);
 				break;
 				
@@ -173,12 +187,27 @@ client.on('messageCreate', msg => {
 				movieList.sort((a, b) => {
 					return b.votes - a.votes;
 				});
-				var reply = getList();
+				var reply = conf.externalHost;
 				msg.reply("Vote recorded!" + "\n" + reply);
 				writeOut();
 				break;
 		}
 	}
+});
+
+const server = http.createServer((req, res) => {
+    console.log(req.headers['X-Forwarded-For'] + ' (' + req.headers['user-agent'] + ') ' + req.method + ' - ' + req.url);
+
+    if (req.method == 'GET') {
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'text/html');
+		res.write(htmlHeader + getList() + htmlFooter);
+	    	res.end();
+    }
+});
+
+server.listen(port, hostname, () => {
+    console.log(`Server running at http://${hostname}:${port}/`);
 });
 
 client.login(auth.token);

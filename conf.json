@@ -2,5 +2,8 @@
 	"saveFile": "listSave",
 	"helpFile": "help.txt",
 	"movieTime": "00 00 12 * * Tue",
-	"channel": "983578912799993866"
+	"channel": "983578912799993866",
+	"hostname": "10.8.8.250",
+	"port": "5555",
+	"externalHost": "https://foxes.pl/movie-tiem/"
 }
