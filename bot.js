@@ -175,6 +175,7 @@ client.on('messageCreate', msg => {
 				}
 				var reply = conf.externalHost;
 				msg.reply("Movie " + toRem + " removed!" + "\n" + reply);
+				writeOut();
 				break;
 				
 			case 'vote':
