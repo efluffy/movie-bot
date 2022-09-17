@@ -196,7 +196,7 @@ client.on('messageCreate', msg => {
 });
 
 const server = http.createServer((req, res) => {
-    console.log(req.headers['X-Forwarded-For'] + ' (' + req.headers['user-agent'] + ') ' + req.method + ' - ' + req.url);
+    console.log((req.headers['x-forwarded-for'] || req.connection.remoteAddress) + ' (' + req.headers['user-agent'] + ') ' + req.method + ' - ' + req.url);
 
     if (req.method == 'GET') {
 		res.statusCode = 200;
