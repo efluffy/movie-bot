@@ -200,11 +200,15 @@ const server = http.createServer((req, res) => {
     console.log((req.headers['x-forwarded-for'] || req.connection.remoteAddress) + ' (' + req.headers['user-agent'] + ') ' + req.method + ' - ' + req.url);
 
     if (req.method == 'GET') {
-		res.statusCode = 200;
-		res.setHeader('Content-Type', 'text/html');
-		res.write(htmlHeader + getList() + htmlFooter);
-	    	res.end();
+	res.statusCode = 200;
+	res.setHeader('Content-Type', 'text/html');
+	res.write(htmlHeader + getList() + htmlFooter);
+	res.end();
     }
+    else {
+	res.end();
+    }
+
 });
 
 server.listen(port, hostname, () => {
