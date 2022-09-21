@@ -50,7 +50,7 @@ function pickMovie() {
 			movieList.splice(i, 1);
 		}
 	}
-	var list = getList();
+	var list = conf.externalHost;
 	channel.send("Movie " + toRem + " picked, removing!" + "\n" + list);
 	writeOut();
 }
