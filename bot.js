@@ -77,7 +77,7 @@ function getList() {
 
 function addList(movie) {
 	currInx++;
-	var obj = { "id": currInx.toString(), "votes": "0", "title": movie };
+	var obj = { "id": currInx.toString(), "votes": "1", "title": movie };
 	movieList.push(obj);
 	writeOut();
 }
