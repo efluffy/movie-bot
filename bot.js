@@ -192,6 +192,32 @@ client.on('messageCreate', msg => {
 				msg.reply("Vote recorded!" + "\n" + reply);
 				writeOut();
 				break;
+			case 'voterange':
+				var range = args[1].split("-");
+				var votes = [];
+				if ( (range[1] - range[0]) > 10 ) {
+					msg.reply("Stop trying to vote for more than 10 movies in a range you problem.");
+					break;
+				}
+				for ( var i = range[0]; i <= range[1]; i++) {
+					votes.push(i) ;
+				}
+				votes.forEach(doVote);
+				function doVote(id) {
+					movieList = movieList.map(obj => {
+						if (obj.id == id) {
+							return {...obj, votes: (parseInt(obj.votes) + 1).toString()};
+						}
+						return obj;
+					});
+				}
+				movieList.sort((a, b) => {
+					return b.votes - a.votes;
+				});
+				var reply = conf.externalHost;
+				msg.reply("Votes recorded!" + "\n" + reply);
+				writeOut();
+				break;
 		}
 	}
 });
