@@ -2,6 +2,7 @@ var { Client, Intents } = require('discord.js');
 var fs = require('fs');
 var conf = require('./conf.json');
 var auth = require('./auth.json');
+var imdbTop100 = require('./imdb_top_100.json');
 var CronJob = require('cron').CronJob;
 const { exec } = require("child_process");
 const http = require("http");
@@ -30,28 +31,47 @@ function getRandomInt(max) {
 }
 
 function pickMovie() {
-	if(movieList.length == 1) {
-		channel.send("Please add more than one movie for random picks!");
-		return;
-	}
-	movieList.sort((a, b) => {
-		return b.votes - a.votes;
-	});
-	var top = [];
-	var max = (movieList.length < 5) ? movieList.length : 5;
-	for(var i = 1; i <= max; i++) {
-		top.push(movieList[i]);
-	}
-	var choice = top[ getRandomInt(max) ];
-	channel.send("Random movie for this week is: " + choice['title'] + "!");
-	var toRem = choice['id'];
-	for( var i = 0; i < movieList.length; i++) {
-		if (movieList[i].id == toRem) {
+	// First, remove any movies with 0 votes from the previous week
+	var removedMovies = [];
+	for(var i = movieList.length - 1; i >= 0; i--) {
+		if(parseInt(movieList[i].votes) === 0) {
+			removedMovies.push(movieList[i].title);
 			movieList.splice(i, 1);
 		}
 	}
+	
+	if(removedMovies.length > 0) {
+		channel.send("Removing movies with 0 votes: " + removedMovies.join(", "));
+	}
+	
+	// Select a random movie from IMDB top 100 that's not already in the list
+	var availableMovies = imdbTop100.filter(movie => {
+		return !movieList.some(listMovie => 
+			listMovie.title.replace(/\s/g, '').toLowerCase() === movie.replace(/\s/g, '').toLowerCase()
+		);
+	});
+	
+	if(availableMovies.length === 0) {
+		channel.send("All IMDB top 100 movies are already in the list!");
+		return;
+	}
+	
+	var randomMovie = availableMovies[getRandomInt(availableMovies.length)];
+	
+	// Add the new movie with 0 votes
+	currInx++;
+	var newMovie = { "id": currInx.toString(), "votes": "0", "title": randomMovie };
+	movieList.push(newMovie);
+	
+	channel.send("Added new movie from IMDB top 100: " + randomMovie + " (ID: " + currInx + ") with 0 votes");
+	
+	// Sort movies by votes (highest first)
+	movieList.sort((a, b) => {
+		return parseInt(b.votes) - parseInt(a.votes);
+	});
+	
 	var list = conf.externalHost;
-	channel.send("Movie " + toRem + " picked, removing!" + "\n" + list);
+	channel.send("Weekly movie update complete!" + "\n" + list);
 	writeOut();
 }
 
@@ -115,7 +135,7 @@ client.on('ready', () => {
 			currInx = Math.max.apply(Math, movieList.map(function(obj) { return obj.id; }));
 		}
 		movieList.sort((a, b) => {
-			return b.votes - a.votes;
+			return parseInt(b.votes) - parseInt(a.votes);
 		});
 		channel = client.channels.cache.get(conf.channel);
 		cron.start();
@@ -186,7 +206,7 @@ client.on('messageCreate', msg => {
 					return obj;
 				});
 				movieList.sort((a, b) => {
-					return b.votes - a.votes;
+					return parseInt(b.votes) - parseInt(a.votes);
 				});
 				var reply = conf.externalHost;
 				msg.reply("Vote recorded!" + "\n" + reply);
@@ -212,7 +232,7 @@ client.on('messageCreate', msg => {
 					});
 				}
 				movieList.sort((a, b) => {
-					return b.votes - a.votes;
+					return parseInt(b.votes) - parseInt(a.votes);
 				});
 				var reply = conf.externalHost;
 				msg.reply("Votes recorded!" + "\n" + reply);
